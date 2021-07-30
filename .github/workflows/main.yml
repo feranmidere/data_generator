@@ -1,19 +1,20 @@
-- name: Python Linter
-  # You may pin to the exact commit or the version.
-  # uses: sunnysid3up/python-linter@93076bd8f740f062069291d738fc70c1b4171c1d
-  uses: sunnysid3up/python-linter@v0.1-beta.7
-  with:
-    # Source file or directory
-    source: # optional, default is .
-    # Set strictness for lint [low, medium, high]
-    strict: # optional, default is medium
-    # Mypy options
-    mypy-options: # optional, default is 
-    # Pylint options
-    pylint-options: # optional, default is 
-    # Black options
-    black-options: # optional, default is 
-    # Isort options
-    isort-options: # optional, default is 
-    # Confirm if source is a Django project
-    django: # optional
+name: Format python code
+on: push
+jobs:
+  autopep8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: autopep8
+        uses: peter-evans/autopep8@v1
+        with:
+          args: --recursive --in-place --aggressive --aggressive .
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: autopep8 action fixes
+          title: Fixes by autopep8 action
+          body: This is an auto-generated PR with fixes by autopep8.
+          labels: autopep8, automated pr
+          reviewers: peter-evans
+          branch: autopep8-patches
