@@ -32,7 +32,7 @@ def generate_sample(class_counts, i, dist_sep_class, n_jobs):
     dists = dist_sep_class[label]
     with jb.Parallel(n_jobs=n_jobs) as parallel:
         results = parallel(jb.delayed(gen_col_sample)(col, dist, number) for col, dist in dists.items())
-    label_sample = np.array(results).transpose()
+    label_sample = np.array(results).T
     target_sample = np.full(shape=(int(number), 1), fill_value=label)
     full_label_sample = np.concatenate([label_sample, target_sample], axis=1)
     return full_label_sample
