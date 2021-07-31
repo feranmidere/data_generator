@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as sps
-import joblib as jb#
+import joblib as jb
 
 
 class BaseSynthesiser:
@@ -45,7 +45,8 @@ class ClassificationSynthesiser(BaseSynthesiser):
                 dist in dists.items())
         label_sample = np.array(results).T
         target_sample = np.full(shape=(int(number), 1), fill_value=label)
-        full_label_sample = np.concatenate([label_sample, target_sample], axis=1)
+        full_label_sample = np.concatenate(
+            [label_sample, target_sample], axis=1)
         return full_label_sample
 
 
