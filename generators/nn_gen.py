@@ -9,7 +9,16 @@ from . import dist_base
 
 
 class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
-    def __init__(self, n_jobs=1, discrete_columns=[], optimizer='adam', callbacks=None, loss='mse', epochs=75, batch_size=32, validation_split=.35):
+    def __init__(
+            self,
+            n_jobs=1,
+            discrete_columns=[],
+            optimizer='adam',
+            callbacks=None,
+            loss='mse',
+            epochs=75,
+            batch_size=32,
+            validation_split=.35):
         self.n_jobs = n_jobs
         self.discrete_columns = discrete_columns
         self.optimizer = optimizer
@@ -45,14 +54,22 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             layers.Dense(1)
         ])
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
-        self.model.fit(X, y, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.validation_split, callbacks=self.callbacks, verbose=False)
+        self.model.fit(
+            X,
+            y,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=self.validation_split,
+            callbacks=self.callbacks,
+            verbose=False)
         return self
 
     def sample(self, n=100):
         utils.check_scalar(n, name='n', target_type=int)
         sample = self.generate_sample(self.dist, self.n_jobs, n)
         target = self.model.predict(sample)
-        full = pd.DataFrame(np.concatenate([sample, target], axis=1)).sample(frac=1)
+        full = pd.DataFrame(np.concatenate(
+            [sample, target], axis=1)).sample(frac=1)
         sample, target = full.drop(
             full.shape[1] - 1, axis=1), full[full.shape[1] - 1]
         return sample.values, target.values
