@@ -37,8 +37,9 @@ class SimpleClassificationSynthesiser(dist_base.ClassificationSynthesiser):
         utils.check_scalar(n, name='n', min_val=10, target_type=int)
         numbers = np.floor(self.class_v_percs_[:, 1] * n)
         if sum(numbers) != n:
-            numbers[np.argmax(numbers)] += 1
-        assert sum(numbers) == n, str(sum(numbers)) + ', ' + str(n)
+            diff = n - sum(numbers)
+            numbers[np.argmax(numbers)] += diff
+        assert sum(numbers) == n
         class_v_nums = np.array(
             [self.class_v_percs_[:, 0], numbers]).transpose()
         with jb.Parallel(n_jobs=self.n_jobs) as parallel:

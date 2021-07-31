@@ -6,6 +6,8 @@ import scipy.stats as sps
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers, callbacks
 from . import dist_base
+import category_encoders as ce
+keras.backend.set_floatx('float64')
 
 
 class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
@@ -39,9 +41,7 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             col for col in self.columns if col not in self.discrete_columns]
         self.numerical_columns_indices = list(
             map(self.columns.index, self.numerical_columns))
-        values, counts = np.unique(y, return_counts=True)
-        self.class_v_percs_ = np.array([values, counts / len(y)]).transpose()
-        self.num_columns_ = X.shape[1]
+        self.enc = ce.OneHotEncoder(verbose=0, cols=self.discrete_columns, return_df=True)
         df = pd.DataFrame(X).join(pd.Series(y, name='target'))
         self.dist = self.model_dist(df, self.numerical_columns_indices)
         self.model = keras.Sequential([
@@ -54,6 +54,7 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             layers.Dense(1)
         ])
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
+        X = self.enc.fit_transform(pd.DataFrame(X, columns=self.columns))
         self.model.fit(
             X,
             y,
@@ -67,7 +68,7 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
     def sample(self, n=100):
         utils.check_scalar(n, name='n', target_type=int)
         sample = self.generate_sample(self.dist, self.n_jobs, n)
-        target = self.model.predict(sample)
+        target = self.model.predict(self.enc.transform(pd.DataFrame(sample, columns=self.columns)).values.astype(np.float64))
         full = pd.DataFrame(np.concatenate(
             [sample, target], axis=1)).sample(frac=1)
         sample, target = full.drop(
