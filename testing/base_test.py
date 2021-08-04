@@ -1,7 +1,6 @@
 import generators
 from sklearn import datasets
 import seaborn as sns
-import pytest
 
 for label, synthesiser in generators.all.items():
     classification = issubclass(
