@@ -41,7 +41,10 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             col for col in self.columns if col not in self.discrete_columns]
         self.numerical_columns_indices = list(
             map(self.columns.index, self.numerical_columns))
-        self.enc = ce.OneHotEncoder(verbose=0, cols=self.discrete_columns, return_df=True)
+        self.enc = ce.OneHotEncoder(
+            verbose=0,
+            cols=self.discrete_columns,
+            return_df=True)
         df = pd.DataFrame(X).join(pd.Series(y, name='target'))
         self.dist = self.model_dist(df, self.numerical_columns_indices)
         self.model = keras.Sequential([
@@ -68,7 +71,12 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
     def sample(self, n=100):
         utils.check_scalar(n, name='n', target_type=int)
         sample = self.generate_sample(self.dist, self.n_jobs, n)
-        target = self.model.predict(self.enc.transform(pd.DataFrame(sample, columns=self.columns)).values.astype(np.float64))
+        target = self.model.predict(
+            self.enc.transform(
+                pd.DataFrame(
+                    sample,
+                    columns=self.columns)).values.astype(
+                np.float64))
         full = pd.DataFrame(np.concatenate(
             [sample, target], axis=1)).sample(frac=1)
         sample, target = full.drop(
