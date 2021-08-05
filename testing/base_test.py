@@ -40,7 +40,7 @@ for label, synthesiser in generators.all.items():
 
     else:
         data = sns.load_dataset('exercise').drop('Unnamed: 0', axis=1)
-        X, y = data.drop(['Unnamed: 0', 'id', 'kind'], axis=1), data.kind
+        X, y = data.drop(['id', 'kind'], axis=1), data.kind
         discrete_columns = ['diet', 'time']
         sampler = synthesiser(discrete_columns=discrete_columns)
         sampler.fit(X, y)

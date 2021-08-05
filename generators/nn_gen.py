@@ -4,7 +4,7 @@ from sklearn import utils
 import joblib as jb
 import scipy.stats as sps
 from tensorflow import keras
-from tensorflow.keras import layers, optimizers, callbacks
+from tensorflow.keras import layers
 from . import dist_base
 import category_encoders as ce
 keras.backend.set_floatx('float64')
@@ -15,6 +15,7 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             self,
             n_jobs=1,
             discrete_columns=[],
+            model=None,
             optimizer='adam',
             callbacks=None,
             loss='mse',
@@ -23,6 +24,7 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             validation_split=.35):
         self.n_jobs = n_jobs
         self.discrete_columns = discrete_columns
+        self.model = model
         self.optimizer = optimizer
         self.callbacks = callbacks
         self.loss = loss
@@ -47,17 +49,20 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
             return_df=True)
         df = pd.DataFrame(X).join(pd.Series(y, name='target'))
         self.dist = self.model_dist(df, self.numerical_columns_indices)
-        self.model = keras.Sequential([
-            layers.Dense(100, activation='relu'),
-            layers.Dropout(.2),
-            layers.BatchNormalization(),
-            layers.Dense(100, activation='relu'),
-            layers.Dropout(.2),
-            layers.BatchNormalization(),
-            layers.Dense(1)
-        ])
+        if self.model is None:
+            self.model = keras.Sequential([
+                layers.Dense(100, activation='relu'),
+                layers.Dropout(.2),
+                layers.BatchNormalization(),
+                layers.Dense(100, activation='relu'),
+                layers.Dropout(.2),
+                layers.BatchNormalization(),
+                layers.Dense(1)
+            ])
+        else:
+            self.model = keras.models.clone_model(self.model)
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
-        X = self.enc.fit_transform(pd.DataFrame(X, columns=self.columns))
+        X = self.enc.fit_transform(pd.DataFrame(X, columns=self.columns)).astype(float)
         self.model.fit(
             X,
             y,
