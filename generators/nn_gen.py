@@ -62,7 +62,8 @@ class SequentialRegressionSynthesiser(dist_base.RegressionSynthesiser):
         else:
             self.model = keras.models.clone_model(self.model)
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
-        X = self.enc.fit_transform(pd.DataFrame(X, columns=self.columns)).astype(float)
+        X = self.enc.fit_transform(pd.DataFrame(
+            X, columns=self.columns)).astype(float)
         self.model.fit(
             X,
             y,
